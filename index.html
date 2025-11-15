@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1e293b">
     <meta name="description" content="Aviator SHA512 Hash Predictor - Advanced analysis tool">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>Aviator Predictor Pro</title>
@@ -21,83 +18,43 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-            background: #0f172a;
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes glow { 0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); } 50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         .animate-slide { animation: slideIn 0.3s ease-out; }
-        .animate-glow { animation: glow 2s ease-in-out infinite; }
-        .animate-bounce { animation: bounce 1s ease-in-out infinite; }
-        .glass-effect {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-        .gradient-border {
-            position: relative;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-            border: 2px solid transparent;
-            background-clip: padding-box;
-        }
-        .gradient-border::before {
-            content: '';
-            position: absolute;
-            top: -2px; right: -2px; bottom: -2px; left: -2px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            border-radius: inherit;
-            z-index: -1;
-            opacity: 0.5;
-        }
-        .install-banner {
+        .install-prompt {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            padding: 12px 16px;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             z-index: 1000;
             display: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        .install-banner.show { display: block; animation: slideIn 0.4s ease-out; }
-        .scroll-container {
-            overflow-y: auto;
-            max-height: calc(100vh - 200px);
-            scrollbar-width: thin;
-            scrollbar-color: rgba(59, 130, 246, 0.5) transparent;
-        }
-        .scroll-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        .scroll-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .scroll-container::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.5);
-            border-radius: 10px;
-        }
+        .install-prompt.show { display: block; animation: slideIn 0.4s ease-out; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     
-    <!-- Install Banner -->
-    <div class="install-banner" id="installBanner">
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
         <div style="display: flex; align-items: center; gap: 12px; color: white;">
             <svg style="width: 24px; height: 24px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
             </svg>
             <div style="flex: 1;">
-                <div style="font-weight: 600; font-size: 14px;">Install Aviator Pro</div>
-                <div style="font-size: 11px; opacity: 0.9;">Add to home screen for best experience</div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Install App</div>
+                <div style="font-size: 12px; opacity: 0.9;">Add to home screen for quick access</div>
             </div>
-            <button id="installBtn" style="background: white; color: #3b82f6; padding: 8px 16px; border-radius: 8px; font-weight: 600; border: none; font-size: 13px;">
+            <button onclick="installApp()" style="background: white; color: #3b82f6; padding: 8px 16px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer;">
                 Install
             </button>
-            <button id="closeBtn" style="background: rgba(255,255,255,0.2); color: white; padding: 6px 10px; border-radius: 6px; border: none; font-size: 16px;">
+            <button onclick="closeInstallPrompt()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 8px; border: none; cursor: pointer;">
                 ✕
             </button>
         </div>
@@ -114,58 +71,20 @@
             const [countdown, setCountdown] = useState(null);
             const [signalTime, setSignalTime] = useState(null);
             const [history, setHistory] = useState([]);
-            const [upcomingSignals, setUpcomingSignals] = useState([]);
             const [activeTab, setActiveTab] = useState('predictor');
             const [currentTime, setCurrentTime] = useState(new Date());
-            const [soundEnabled, setSoundEnabled] = useState(true);
             const countdownRef = useRef(null);
-            const audioRef = useRef(null);
 
             useEffect(() => {
                 const timer = setInterval(() => setCurrentTime(new Date()), 1000);
                 const saved = localStorage.getItem('aviatorHistory');
-                const savedUpcoming = localStorage.getItem('aviatorUpcoming');
-                const savedSound = localStorage.getItem('aviatorSound');
                 if (saved) setHistory(JSON.parse(saved));
-                if (savedUpcoming) setUpcomingSignals(JSON.parse(savedUpcoming));
-                if (savedSound !== null) setSoundEnabled(savedSound === 'true');
-                
-                // Create audio context
-                audioRef.current = new Audio();
-                
                 return () => clearInterval(timer);
             }, []);
 
             useEffect(() => {
                 localStorage.setItem('aviatorHistory', JSON.stringify(history));
             }, [history]);
-
-            useEffect(() => {
-                localStorage.setItem('aviatorUpcoming', JSON.stringify(upcomingSignals));
-            }, [upcomingSignals]);
-
-            useEffect(() => {
-                localStorage.setItem('aviatorSound', soundEnabled.toString());
-            }, [soundEnabled]);
-
-            const playSound = () => {
-                if (!soundEnabled) return;
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-            };
 
             const calcEntropy = (h) => {
                 const freq = {};
@@ -219,11 +138,11 @@
             };
 
             const calcDelay = (score, entropy, odd) => {
-                let d = odd * 45 + 60; // Add 60 seconds (1 minute) base gap
+                let d = odd * 45;
                 if (entropy > 4.5) d += 30;
                 if (score % 11 === 0) d += 35;
                 d += { 2: 10, 3: 10, 4: 20, 7: 35, 10: 75, 100: 650 }[odd] || 0;
-                return Math.max(odd * 40 + 60, d); // Ensure minimum 1 minute gap
+                return Math.max(odd * 40, d);
             };
 
             const validateHash = (h) => h.length === 128 && /^[a-f0-9]+$/.test(h);
@@ -255,24 +174,14 @@
                 setSelectedOdd(odd);
                 setResult({ odd, ...p, targetTime: t.toLocaleTimeString() });
                 setSignalTime(t);
-                
-                const newSignal = {
+                setHistory(prev => [{
                     id: Date.now(),
                     odd,
                     time: new Date().toLocaleTimeString(),
                     targetTime: t.toLocaleTimeString(),
                     confidence: p.confidence,
-                    timestamp: t.getTime(),
-                    status: 'pending'
-                };
-                
-                setHistory(prev => [newSignal, ...prev].slice(0, 50));
-                setUpcomingSignals(prev => {
-                    const filtered = prev.filter(s => s.timestamp > Date.now());
-                    return [...filtered, newSignal].sort((a, b) => a.timestamp - b.timestamp).slice(0, 10);
-                });
-                
-                playSound();
+                    timestamp: t.getTime()
+                }, ...prev].slice(0, 20));
                 startCountdown(t, odd);
             };
 
@@ -283,9 +192,6 @@
                     if (diff <= 0) {
                         clearInterval(countdownRef.current);
                         setCountdown({ text: `${odd}x ACTIVE NOW! 🚀`, type: 'active' });
-                        playSound();
-                        // Remove from upcoming
-                        setUpcomingSignals(prev => prev.filter(s => s.timestamp > Date.now()));
                     } else {
                         const m = Math.floor(diff / 60);
                         const s = diff % 60;
@@ -309,121 +215,83 @@
                 try {
                     const t = await navigator.clipboard.readText();
                     setHash(t.trim().toLowerCase());
-                } catch (e) {
-                    alert('Paste permission denied. Please paste manually.');
-                }
-            };
-
-            const copyToClipboard = (text) => {
-                navigator.clipboard.writeText(text).then(() => {
-                    playSound();
-                }).catch(() => {
-                    alert('Copy failed. Please try manually.');
-                });
-            };
-
-            const deleteHistoryItem = (id) => {
-                setHistory(prev => prev.filter(item => item.id !== id));
-                setUpcomingSignals(prev => prev.filter(item => item.id !== id));
-                playSound();
+                } catch (e) {}
             };
 
             const oddStyles = {
-                2: { color: 'from-emerald-500 to-green-600', border: 'border-emerald-400', label: 'Safe', icon: '🛡️', bg: 'bg-emerald-500/20' },
-                3: { color: 'from-yellow-500 to-orange-500', border: 'border-yellow-400', label: 'Balanced', icon: '⚖️', bg: 'bg-yellow-500/20' },
-                4: { color: 'from-orange-500 to-red-500', border: 'border-orange-400', label: 'Moderate', icon: '📊', bg: 'bg-orange-500/20' },
-                7: { color: 'from-purple-500 to-pink-500', border: 'border-purple-400', label: 'High', icon: '⚡', bg: 'bg-purple-500/20' },
-                10: { color: 'from-red-500 to-rose-600', border: 'border-red-400', label: 'Very High', icon: '🔥', bg: 'bg-red-500/20' },
-                100: { color: 'from-pink-500 to-fuchsia-600', border: 'border-pink-400', label: 'Extreme', icon: '💎', bg: 'bg-pink-500/20' }
+                2: { color: 'from-emerald-500 to-green-600', border: 'border-emerald-400', label: 'Safe', icon: '🛡️' },
+                3: { color: 'from-yellow-500 to-orange-500', border: 'border-yellow-400', label: 'Balanced', icon: '⚖️' },
+                4: { color: 'from-orange-500 to-red-500', border: 'border-orange-400', label: 'Moderate', icon: '📊' },
+                7: { color: 'from-purple-500 to-pink-500', border: 'border-purple-400', label: 'High', icon: '⚡' },
+                10: { color: 'from-red-500 to-rose-600', border: 'border-red-400', label: 'Very High', icon: '🔥' },
+                100: { color: 'from-pink-500 to-fuchsia-600', border: 'border-pink-400', label: 'Extreme', icon: '💎' }
             };
 
             return (
                 <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-                    {/* Enhanced Header */}
-                    <div className="sticky top-0 z-50 glass-effect border-b border-white/10 shadow-2xl">
-                        <div className="px-4 py-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-xl shadow-lg">
-                                        ✈️
+                    {/* Compact Header */}
+                    <div className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-r from-blue-600/90 to-purple-600/90 border-b border-white/10 shadow-xl">
+                        <div className="px-3 py-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-lg">
+                                        #
                                     </div>
                                     <div>
-                                        <div className="text-base font-bold text-white">Aviator Pro</div>
-                                        <div className="text-xs text-blue-200 opacity-80">{currentTime.toLocaleTimeString()}</div>
+                                        <div className="text-sm font-bold text-white">Aviator Pro</div>
+                                        <div className="text-xs text-blue-100 opacity-70">{currentTime.toLocaleTimeString()}</div>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => setSoundEnabled(!soundEnabled)}
-                                    className={`px-3 py-2 rounded-lg font-bold text-sm transition-all ${
-                                        soundEnabled ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'
-                                    }`}
-                                >
-                                    {soundEnabled ? '🔊' : '🔇'}
-                                </button>
+                                {countdown && (
+                                    <div className={`px-3 py-1.5 rounded-lg font-bold text-xs ${
+                                        countdown.type === 'active' ? 'bg-emerald-500 animate-pulse' :
+                                        countdown.type === 'urgent' ? 'bg-red-500' :
+                                        countdown.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+                                    } text-white`}>
+                                        {countdown.text}
+                                    </div>
+                                )}
                             </div>
-                            {countdown && (
-                                <div className={`px-4 py-2.5 rounded-xl font-bold text-sm text-center ${
-                                    countdown.type === 'active' ? 'bg-emerald-500 animate-glow' :
-                                    countdown.type === 'urgent' ? 'bg-red-500 animate-pulse' :
-                                    countdown.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-                                } text-white shadow-lg`}>
-                                    {countdown.text}
-                                </div>
-                            )}
                         </div>
                     </div>
 
-                    {/* Modern Tabs */}
-                    <div className="glass-effect border-b border-white/5 sticky top-[88px] z-40">
-                        <div className="flex overflow-x-auto">
-                            {[
-                                { id: 'predictor', label: 'Predict', icon: '🎯' },
-                                { id: 'upcoming', label: 'Upcoming', icon: '⏰' },
-                                { id: 'history', label: 'History', icon: '📊' }
-                            ].map(tab => (
+                    {/* Tabs */}
+                    <div className="bg-slate-900/50 border-b border-white/5">
+                        <div className="flex">
+                            {[{ id: 'predictor', label: '🎯 Predict' }, { id: 'history', label: '📊 History' }].map(tab => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex-1 min-w-[100px] py-3.5 text-sm font-semibold transition-all ${
-                                        activeTab === tab.id 
-                                            ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg' 
-                                            : 'text-slate-400 hover:text-white'
+                                    className={`flex-1 py-3 text-sm font-medium transition-all ${
+                                        activeTab === tab.id ? 'text-blue-400 bg-slate-800/50 border-b-2 border-blue-400' : 'text-slate-400'
                                     }`}
                                 >
-                                    <div className="flex items-center justify-center gap-2">
-                                        <span>{tab.icon}</span>
-                                        <span>{tab.label}</span>
-                                        {tab.id === 'upcoming' && upcomingSignals.length > 0 && (
-                                            <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                                                {upcomingSignals.length}
-                                            </span>
-                                        )}
-                                    </div>
+                                    {tab.label}
                                 </button>
                             ))}
                         </div>
                     </div>
 
                     {/* Content */}
-                    <div className="p-4 pb-24 space-y-4">
+                    <div className="p-3 pb-20 space-y-3">
                         {activeTab === 'predictor' && (
                             <>
                                 {/* Hash Input */}
-                                <div className="glass-effect rounded-2xl p-4 border border-white/10 shadow-xl animate-slide">
-                                    <div className="text-xs text-slate-400 mb-3 font-semibold uppercase tracking-wide">SHA512 Hash Input</div>
+                                <div className="bg-slate-800/80 backdrop-blur rounded-xl p-3 border border-white/5 animate-slide">
+                                    <div className="text-xs text-slate-400 mb-2">SHA512 Hash</div>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
                                             value={hash}
                                             onChange={(e) => setHash(e.target.value.trim().toLowerCase())}
-                                            placeholder="Paste your hash here..."
-                                            className="flex-1 px-4 py-3 text-sm bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                                            placeholder="Paste hash..."
+                                            className="flex-1 px-3 py-2 text-sm bg-slate-950 border border-slate-700 rounded-lg text-white focus:ring-1 focus:ring-blue-500 focus:outline-none"
                                         />
-                                        <button onClick={pasteHash} className="px-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white text-lg shadow-lg active:scale-95 transition-transform">📋</button>
-                                        <button onClick={() => { setHash(''); setResult(null); setSelectedOdd(null); }} className="px-4 bg-gradient-to-r from-red-600 to-red-700 rounded-xl text-white text-lg shadow-lg active:scale-95 transition-transform">🗑️</button>
+                                        <button onClick={pasteHash} className="px-3 bg-blue-600 rounded-lg text-white text-sm">📋</button>
+                                        <button onClick={() => { setHash(''); setResult(null); }} className="px-3 bg-red-600 rounded-lg text-white text-sm">🗑️</button>
                                     </div>
                                     {hash && !validateHash(hash) && (
-                                        <div className="mt-3 text-xs text-red-400 bg-red-500/10 px-3 py-2 rounded-lg">⚠️ Invalid hash format (must be 128 hex characters)</div>
+                                        <div className="mt-2 text-xs text-red-400">⚠️ Invalid hash format</div>
                                     )}
                                 </div>
 
@@ -431,15 +299,15 @@
                                 {validateHash(hash) && (
                                     <button
                                         onClick={autoSelect}
-                                        className="w-full py-4 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 rounded-2xl font-bold text-base text-white shadow-2xl active:scale-98 transition-all animate-slide"
+                                        className="w-full py-3 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-xl font-bold text-sm text-white shadow-lg active:scale-95 transition-transform"
                                     >
-                                        ✨ AI Auto-Select Best Multiplier ✨
+                                        ✨ AI Auto-Select Best
                                     </button>
                                 )}
 
                                 {/* Multipliers Grid */}
                                 {validateHash(hash) && (
-                                    <div className="grid grid-cols-2 gap-3 animate-slide">
+                                    <div className="grid grid-cols-3 gap-2">
                                         {[2, 3, 4, 7, 10, 100].map(odd => {
                                             const p = predictions[odd];
                                             const s = oddStyles[odd];
@@ -447,20 +315,18 @@
                                                 <button
                                                     key={odd}
                                                     onClick={() => predict(odd)}
-                                                    className={`relative glass-effect p-4 rounded-2xl border-2 ${
-                                                        selectedOdd === odd ? s.border + ' shadow-2xl' : 'border-white/10 hover:border-white/20'
-                                                    } active:scale-95 transition-all`}
+                                                    className={`relative bg-slate-800/80 backdrop-blur p-3 rounded-xl border ${
+                                                        selectedOdd === odd ? s.border + ' border-2' : 'border-white/5'
+                                                    } active:scale-95 transition-transform`}
                                                 >
                                                     <div className="text-center">
-                                                        <div className="text-3xl mb-2">{s.icon}</div>
-                                                        <div className="text-2xl font-bold text-white mb-1">{odd}x</div>
-                                                        <div className="text-xs text-slate-400 mb-3">{s.label}</div>
+                                                        <div className="text-2xl mb-1">{s.icon}</div>
+                                                        <div className="text-xl font-bold text-white">{odd}x</div>
+                                                        <div className="text-xs text-slate-400 mb-2">{s.label}</div>
                                                         {p && (
                                                             <>
-                                                                <div className={`text-sm font-bold mb-2 px-3 py-1 rounded-full ${s.bg}`}>
-                                                                    <span className="text-white">{p.confidence}%</span>
-                                                                </div>
-                                                                <div className="h-2 bg-slate-950 rounded-full overflow-hidden">
+                                                                <div className="text-xs font-bold text-blue-400 mb-1">{p.confidence}%</div>
+                                                                <div className="h-1 bg-slate-950 rounded-full overflow-hidden">
                                                                     <div className={`h-full bg-gradient-to-r ${s.color} transition-all duration-700`} style={{ width: `${p.confidence}%` }}></div>
                                                                 </div>
                                                             </>
@@ -474,198 +340,83 @@
 
                                 {/* Results */}
                                 {result && (
-                                    <div className="glass-effect rounded-2xl p-4 border border-white/10 shadow-xl animate-slide">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="text-base font-bold text-white flex items-center gap-2">
-                                                📊 Detailed Analysis
-                                            </div>
+                                    <div className="bg-slate-800/80 backdrop-blur rounded-xl p-3 border border-white/5 animate-slide">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="text-sm font-bold text-white">📊 Analysis</div>
                                             <button
-                                                onClick={() => copyToClipboard(`🎯 ${result.odd}x | ⏰ ${result.targetTime} | 📈 ${result.confidence}% | 🔢 Score: ${result.score}`)}
-                                                className="px-4 py-2 text-xs bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg text-white font-semibold shadow-lg active:scale-95 transition-transform"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(`🎯 ${result.odd}x | ⏰ ${result.targetTime} | 📈 ${result.confidence}%`);
+                                                }}
+                                                className="px-3 py-1 text-xs bg-blue-600 rounded-lg text-white"
                                             >
-                                                📋 Copy
+                                                Copy
                                             </button>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3 text-xs">
-                                            {[
-                                                { label: 'Target', value: `${result.odd}x`, color: 'text-blue-400', icon: '🎯' },
-                                                { label: 'Confidence', value: `${result.confidence}%`, color: 'text-emerald-400', icon: '📈' },
-                                                { label: 'Signal Time', value: result.targetTime, color: 'text-purple-400', icon: '⏰' },
-                                                { label: 'Entropy', value: result.entropy.toFixed(2), color: 'text-orange-400', icon: '🔬' },
-                                                { label: 'Hash Score', value: result.score, color: 'text-pink-400', icon: '🔢' },
-                                                { label: 'Delay', value: `${Math.floor(result.delay / 60)}m ${result.delay % 60}s`, color: 'text-yellow-400', icon: '⏱️' }
-                                            ].map((item, i) => (
-                                                <div key={i} className="bg-slate-950/50 p-3 rounded-xl border border-white/5">
-                                                    <div className="text-slate-400 mb-1.5 flex items-center gap-1">
-                                                        <span>{item.icon}</span>
-                                                        <span>{item.label}</span>
-                                                    </div>
-                                                    <div className={`font-bold text-base ${item.color}`}>{item.value}</div>
-                                                </div>
-                                            ))}
+                                        <div className="grid grid-cols-3 gap-2 text-xs">
+                                            <div className="bg-slate-950/50 p-2 rounded-lg">
+                                                <div className="text-slate-400 mb-1">Target</div>
+                                                <div className="font-bold text-blue-400">{result.odd}x</div>
+                                            </div>
+                                            <div className="bg-slate-950/50 p-2 rounded-lg">
+                                                <div className="text-slate-400 mb-1">Confidence</div>
+                                                <div className="font-bold text-emerald-400">{result.confidence}%</div>
+                                            </div>
+                                            <div className="bg-slate-950/50 p-2 rounded-lg">
+                                                <div className="text-slate-400 mb-1">Time</div>
+                                                <div className="font-bold text-purple-400">{result.targetTime}</div>
+                                            </div>
+                                            <div className="bg-slate-950/50 p-2 rounded-lg">
+                                                <div className="text-slate-400 mb-1">Entropy</div>
+                                                <div className="font-bold text-orange-400">{result.entropy.toFixed(2)}</div>
+                                            </div>
+                                            <div className="bg-slate-950/50 p-2 rounded-lg">
+                                                <div className="text-slate-400 mb-1">Score</div>
+                                                <div className="font-bold text-pink-400">{result.score}</div>
+                                            </div>
+                                            <div className="bg-slate-950/50 p-2 rounded-lg">
+                                                <div className="text-slate-400 mb-1">Delay</div>
+                                                <div className="font-bold text-yellow-400">{result.delay}s</div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </>
                         )}
 
-                        {activeTab === 'upcoming' && (
-                            <div className="space-y-3 scroll-container">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="text-base font-bold text-white flex items-center gap-2">
-                                        ⏰ Upcoming Signals ({upcomingSignals.filter(s => s.timestamp > Date.now()).length})
-                                    </div>
-                                </div>
-                                {upcomingSignals.filter(s => s.timestamp > Date.now()).length === 0 ? (
-                                    <div className="text-center py-16 animate-slide">
-                                        <div className="text-6xl mb-4 animate-bounce">⏰</div>
-                                        <div className="text-base text-slate-400 mb-2">No Upcoming Signals</div>
-                                        <div className="text-sm text-slate-500">Make a prediction to see upcoming signals</div>
-                                    </div>
-                                ) : (
-                                    upcomingSignals.filter(s => s.timestamp > Date.now()).map((signal, index) => {
-                                        const timeLeft = Math.floor((signal.timestamp - Date.now()) / 1000);
-                                        const minutes = Math.floor(timeLeft / 60);
-                                        const seconds = timeLeft % 60;
-                                        const s = oddStyles[signal.odd];
-                                        
-                                        return (
-                                            <div key={signal.id} className="glass-effect p-4 rounded-2xl border border-white/10 shadow-xl animate-slide">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`w-16 h-16 bg-gradient-to-br ${s.color} rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-lg shrink-0`}>
-                                                        {signal.odd}x
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="text-2xl">{s.icon}</span>
-                                                            <div>
-                                                                <div className="text-sm font-bold text-white">Signal #{index + 1}</div>
-                                                                <div className="text-xs text-slate-400">{s.label} Risk</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                                            <div className="bg-slate-950/50 px-2 py-1.5 rounded-lg">
-                                                                <div className="text-slate-500">Target Time</div>
-                                                                <div className="text-purple-400 font-bold">{signal.targetTime}</div>
-                                                            </div>
-                                                            <div className="bg-slate-950/50 px-2 py-1.5 rounded-lg">
-                                                                <div className="text-slate-500">Confidence</div>
-                                                                <div className="text-emerald-400 font-bold">{signal.confidence}%</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className={`mt-2 text-center py-2 rounded-lg font-bold ${
-                                                            timeLeft < 30 ? 'bg-red-500 animate-pulse' :
-                                                            timeLeft < 60 ? 'bg-yellow-500' : 'bg-blue-500'
-                                                        } text-white`}>
-                                                            ⏱️ {minutes}:{seconds.toString().padStart(2, '0')} remaining
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => deleteHistoryItem(signal.id)}
-                                                        className="px-3 py-2 bg-red-600 rounded-lg text-white text-lg shadow-lg active:scale-95 transition-transform shrink-0"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        )}
-
                         {activeTab === 'history' && (
-                            <div className="space-y-3 scroll-container">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="text-base font-bold text-white flex items-center gap-2">
-                                        📊 Prediction History ({history.length})
-                                    </div>
-                                    {history.length > 0 && (
-                                        <button 
-                                            onClick={() => { 
-                                                setHistory([]); 
-                                                setUpcomingSignals([]);
-                                                playSound(); 
-                                            }} 
-                                            className="text-xs text-red-400 bg-red-500/10 px-3 py-1.5 rounded-lg font-semibold active:scale-95 transition-transform"
-                                        >
-                                            🗑️ Clear All
-                                        </button>
-                                    )}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="text-sm font-bold text-white">History ({history.length})</div>
+                                    <button onClick={() => setHistory([])} className="text-xs text-red-400">Clear All</button>
                                 </div>
                                 {history.length === 0 ? (
-                                    <div className="text-center py-16 animate-slide">
-                                        <div className="text-6xl mb-4">📊</div>
-                                        <div className="text-base text-slate-400 mb-2">No History Yet</div>
-                                        <div className="text-sm text-slate-500">Your predictions will appear here</div>
+                                    <div className="text-center py-12 text-slate-500">
+                                        <div className="text-4xl mb-2">📊</div>
+                                        <div className="text-sm">No predictions yet</div>
                                     </div>
                                 ) : (
-                                    history.map((h, index) => {
-                                        const s = oddStyles[h.odd];
-                                        const isPast = h.timestamp < Date.now();
-                                        
-                                        return (
-                                            <div key={h.id} className="glass-effect p-4 rounded-2xl border border-white/10 shadow-xl animate-slide">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`w-16 h-16 bg-gradient-to-br ${s.color} rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-lg shrink-0 relative`}>
-                                                        {h.odd}x
-                                                        {isPast && (
-                                                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-xs">
-                                                                ✓
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="text-2xl">{s.icon}</span>
-                                                            <div>
-                                                                <div className="text-sm font-bold text-white">
-                                                                    Prediction #{history.length - index}
-                                                                    {isPast && <span className="ml-2 text-xs text-emerald-400">(Completed)</span>}
-                                                                </div>
-                                                                <div className="text-xs text-slate-400">{s.label} Risk • {h.confidence}% Confidence</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                                            <div className="bg-slate-950/50 px-2 py-1.5 rounded-lg">
-                                                                <div className="text-slate-500">Created</div>
-                                                                <div className="text-blue-400 font-bold">{h.time}</div>
-                                                            </div>
-                                                            <div className="bg-slate-950/50 px-2 py-1.5 rounded-lg">
-                                                                <div className="text-slate-500">Target Time</div>
-                                                                <div className="text-purple-400 font-bold">{h.targetTime}</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex flex-col gap-2 shrink-0">
-                                                        <button
-                                                            onClick={() => {
-                                                                copyToClipboard(`🎯 ${h.odd}x | ⏰ ${h.targetTime} | 📈 ${h.confidence}%`);
-                                                            }}
-                                                            className="px-3 py-2 bg-blue-600 rounded-lg text-white text-lg shadow-lg active:scale-95 transition-transform"
-                                                        >
-                                                            📋
-                                                        </button>
-                                                        <button
-                                                            onClick={() => deleteHistoryItem(h.id)}
-                                                            className="px-3 py-2 bg-red-600 rounded-lg text-white text-lg shadow-lg active:scale-95 transition-transform"
-                                                        >
-                                                            🗑️
-                                                        </button>
-                                                    </div>
+                                    history.map(h => (
+                                        <div key={h.id} className="flex items-center gap-3 bg-slate-800/80 backdrop-blur p-3 rounded-xl border border-white/5">
+                                            <div className={`w-12 h-12 bg-gradient-to-br ${oddStyles[h.odd].color} rounded-lg flex items-center justify-center font-bold text-white shrink-0`}>
+                                                {h.odd}x
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-sm font-bold text-white truncate">{h.targetTime}</div>
+                                                <div className="text-xs text-slate-400">
+                                                    {h.time} • {h.confidence}%
                                                 </div>
                                             </div>
-                                        );
-                                    })
+                                        </div>
+                                    ))
                                 )}
                             </div>
                         )}
                     </div>
 
                     {/* Warning Footer */}
-                    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-red-900/90 to-rose-900/90 backdrop-blur-xl border-t border-red-500/30 p-3 shadow-2xl">
-                        <div className="text-xs text-red-100 text-center font-medium">
-                            ⚠️ For entertainment only. Predictions are analytical estimates. Gamble responsibly.
+                    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-red-900/80 to-rose-900/80 backdrop-blur-xl border-t border-red-500/30 p-2">
+                        <div className="text-xs text-red-200 text-center">
+                            ⚠️ Predictions are analytical tools. Gamble responsibly.
                         </div>
                     </div>
                 </div>
@@ -676,65 +427,33 @@
     </script>
 
     <script>
-        // Enhanced PWA Install for Mobile
+        // PWA Install
         let deferredPrompt;
-        const installBanner = document.getElementById('installBanner');
-        const installBtn = document.getElementById('installBtn');
-        const closeBtn = document.getElementById('closeBtn');
-
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            installBanner.classList.add('show');
+            document.getElementById('installPrompt').classList.add('show');
         });
 
-        installBtn.addEventListener('click', async () => {
-            if (!deferredPrompt) {
-                // Fallback for iOS
-                if (navigator.userAgent.match(/(iPhone|iPad|iPod)/i)) {
-                    alert('To install:\n1. Tap Share button\n2. Select "Add to Home Screen"\n3. Tap "Add"');
-                } else {
-                    alert('Installation not available. Try accessing from Chrome on Android.');
-                }
-                return;
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        closeInstallPrompt();
+                    }
+                    deferredPrompt = null;
+                });
             }
-            
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            
-            if (outcome === 'accepted') {
-                installBanner.classList.remove('show');
-            }
-            
-            deferredPrompt = null;
-        });
-
-        closeBtn.addEventListener('click', () => {
-            installBanner.classList.remove('show');
-            localStorage.setItem('installPromptDismissed', 'true');
-        });
-
-        // Show install prompt if not dismissed
-        if (!localStorage.getItem('installPromptDismissed')) {
-            setTimeout(() => {
-                if (deferredPrompt) {
-                    installBanner.classList.add('show');
-                }
-            }, 3000);
         }
 
-        // Service Worker Registration
+        function closeInstallPrompt() {
+            document.getElementById('installPrompt').classList.remove('show');
+        }
+
+        // Service Worker
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed'));
-            });
-        }
-
-        // iOS Standalone mode detection
-        if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
-            document.body.style.paddingTop = '20px'; // Safe area for notch
+            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
