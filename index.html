@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator SHA512 Predictor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+        }
+        
+        .live-time {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background-color: var(--dark-light);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab {
+            padding: 16px 32px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            color: var(--text-muted);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .tab:hover:not(.active) {
+            color: var(--text);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 30px 0;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Card Styles */
+        .card {
+            background-color: var(--dark-light);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Signal Banner */
+        .signal-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+        
+        .signal-info {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .signal-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .signal-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        
+        .signal-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        /* Input Section */
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .hash-input {
+            flex: 1;
+            padding: 14px 16px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .hash-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+        
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--dark);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        /* Multiplier Grid */
+        .multiplier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .multiplier-card {
+            background: linear-gradient(135deg, var(--dark-light), rgba(99, 102, 241, 0.1));
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .multiplier-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .multiplier-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .multiplier-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        
+        .confidence {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        /* Result Section */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .result-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        /* Countdown */
+        .countdown {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 24px 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .countdown.active {
+            animation: pulse 2s infinite;
+        }
+        
+        /* History */
+        .history-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .history-item:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        
+        .history-multiplier {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .history-details {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .history-detail {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .history-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .history-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+            
+            .tab {
+                padding: 12px 20px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .multiplier-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .signal-info {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .history-details {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-plane-departure"></i>
+                    <span>Aviator SHA512 Predictor</span>
+                </div>
+                <div class="live-time" id="liveTime">
+                    <i class="fas fa-clock"></i> 
+                    <span id="timeDisplay">--:--:--</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="container">
+            <div class="tab active" data-tab="predictor">
+                <i class="fas fa-chart-line"></i> Predictor
+            </div>
+            <div class="tab" data-tab="history">
+                <i class="fas fa-history"></i> History
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Signal Banner -->
+            <div class="signal-banner" id="signalBanner" style="display: none;">
+                <div class="signal-info">
+                    <div class="signal-item">
+                        <div class="signal-label">Latest Signal</div>
+                        <div class="signal-value" id="signalCount">0</div>
+                    </div>
+                    <div class="signal-item">
+                        <div class="signal-label">Signal Time</div>
+                        <div class="signal-value" id="signalTime">--:--:--</div>
+                    </div>
+                </div>
+                <div class="signal-item">
+                    <div class="signal-label">Status</div>
+                    <div class="signal-value" id="signalStatus">INACTIVE</div>
+                </div>
+            </div>
+
+            <!-- Predictor Tab -->
+            <div class="tab-content active" id="predictorTab">
+                <!-- Hash Input -->
+                <div class="card">
+                    <h3 class="card-title">
+                        <i class="fas fa-hashtag"></i> Enter SHA512 Hash
+                    </h3>
+                    <div class="input-group">
+                        <input type="text" id="hashInput" class="hash-input" placeholder="Paste your SHA512 hash here...">
+                        <button class="btn btn-primary" id="pasteBtn">
+                            <i class="fas fa-paste"></i> Paste
+                        </button>
+                        <button class="btn btn-secondary" id="analyzeBtn">
+                            <i class="fas fa-calculator"></i> Analyze
+                        </button>
+                        <button class="btn btn-danger" id="clearBtn">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                    <div class="error-message" id="hashError">
+                        <i class="fas fa-exclamation-circle"></i> Invalid hash format
+                    </div>
+                </div>
+
+                <!-- Auto Select Button -->
+                <button class="btn btn-success" id="autoSelectBtn" style="width: 100%; margin-bottom: 24px; display: none;">
+                    <i class="fas fa-robot"></i> Auto-Select Best Multiplier
+                </button>
+
+                <!-- Multipliers -->
+                <div class="card">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt"></i> Multiplier Predictions
+                    </h3>
+                    <div class="multiplier-grid" id="multiplierGrid">
+                        <!-- Multipliers will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Result Box -->
+                <div class="card" id="resultBox" style="display: none;">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> Prediction Result
+                    </h3>
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <div class="result-label">Target Multiplier</div>
+                            <div class="result-value" id="resultMultiplier">--x</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Confidence</div>
+                            <div class="result-value" id="resultConfidence">--%</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Signal Time</div>
+                            <div class="result-value" id="resultTime">--:--:--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Countdown -->
+                <div class="countdown" id="countdownBox" style="display: none;">
+                    <i class="fas fa-hourglass-half"></i>
+                    <span id="countdownText">Next signal in --:--</span>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-content" id="historyTab">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 class="card-title">
+                            <i class="fas fa-list"></i> Prediction History
+                        </h3>
+                        <button class="btn btn-danger" id="clearHistory">
+                            <i class="fas fa-trash"></i> Clear History
+                        </button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <!-- History items will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p><i class="fas fa-exclamation-triangle"></i> Disclaimer: Predictions are analytical only and should be used with caution.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Utility Functions
+        function validateHash(hash) {
+            return hash.length === 128 && /^[a-f0-9]+$/.test(hash);
+        }
+        
+        function calcEntropy(hash) {
+            const frequency = {};
+            for (let char of hash) {
+                frequency[char] = (frequency[char] || 0) + 1;
+            }
+            return Object.values(frequency).reduce((acc, count) => {
+                const probability = count / hash.length;
+                return acc - probability * Math.log2(probability);
+            }, 0);
+        }
+        
+        function scoreHash(hash) {
+            const primaryPositions = [5, 15, 25, 35, 50, 75, 100, 120];
+            const secondaryPositions = [10, 20, 40, 60, 80, 110];
+            
+            let primaryScore = primaryPositions.reduce((acc, pos) => acc + parseInt(hash[pos], 16), 0);
+            let secondaryScore = secondaryPositions.reduce((acc, pos) => acc + parseInt(hash[pos], 16), 0);
+            
+            return Math.round(primaryScore * 0.7 + secondaryScore * 0.3);
+        }
+
+        // UI Elements
+        const hashInput = document.getElementById('hashInput');
+        const hashError = document.getElementById('hashError');
+        const autoSelectBtn = document.getElementById('autoSelectBtn');
+        const multiplierGrid = document.getElementById('multiplierGrid');
+        const resultBox = document.getElementById('resultBox');
+        const countdownBox = document.getElementById('countdownBox');
+        const countdownText = document.getElementById('countdownText');
+        const historyList = document.getElementById('historyList');
+        const signalBanner = document.getElementById('signalBanner');
+        const signalCount = document.getElementById('signalCount');
+        const signalTime = document.getElementById('signalTime');
+        const signalStatus = document.getElementById('signalStatus');
+        const resultMultiplier = document.getElementById('resultMultiplier');
+        const resultConfidence = document.getElementById('resultConfidence');
+        const resultTime = document.getElementById('resultTime');
+        const timeDisplay = document.getElementById('timeDisplay');
+
+        const odds = [2, 3, 4, 7, 10, 100];
+        const colors = {
+            2: '#10b981',
+            3: '#f59e0b', 
+            4: '#f97316',
+            7: '#8b5cf6',
+            10: '#ef4444',
+            100: '#ec4899'
+        };
+
+        let predictions = {};
+        let timer = null;
+        let history = [];
+        let signalCountValue = 0;
+
+        // Render multiplier cards
+        function renderMultipliers() {
+            multiplierGrid.innerHTML = '';
+            
+            odds.forEach(odd => {
+                const prediction = predictions[odd];
+                const card = document.createElement('div');
+                card.className = 'multiplier-card';
+                card.style.borderColor = colors[odd];
+                card.onclick = () => predict(odd);
+                
+                card.innerHTML = `
+                    <div class="multiplier-value" style="color: ${colors[odd]}">${odd}x</div>
+                    <div class="multiplier-label">Multiplier</div>
+                    <div class="confidence">${prediction.confidence}% confidence</div>
+                `;
+                
+                multiplierGrid.appendChild(card);
+            });
+        }
+
+        // Analyze hash function
+        function analyzeHash() {
+            const hash = hashInput.value.trim().toLowerCase();
+            
+            if (!validateHash(hash)) {
+                hashError.style.display = 'block';
+                multiplierGrid.innerHTML = '';
+                autoSelectBtn.style.display = 'none';
+                return;
+            }
+            
+            hashError.style.display = 'none';
+            
+            const entropy = calcEntropy(hash);
+            const score = scoreHash(hash);
+            
+            predictions = {};
+            odds.forEach(odd => {
+                let confidence = 50 + Math.floor(entropy * 4) + (score % 10);
+                predictions[odd] = {
+                    confidence: Math.min(98, confidence),
+                    entropy: entropy,
+                    score: score,
+                    delay: odd * 60
+                };
+            });
+            
+            autoSelectBtn.style.display = 'block';
+            renderMultipliers();
+        }
+
+        // Predict function
+        function predict(odd) {
+            signalCountValue++;
+            const prediction = predictions[odd];
+            const targetTime = new Date(Date.now() + prediction.delay * 1000);
+            
+            // Update signal banner
+            signalBanner.style.display = 'flex';
+            signalCount.textContent = signalCountValue;
+            signalTime.textContent = targetTime.toLocaleTimeString();
+            signalStatus.textContent = 'ACTIVE';
+            signalStatus.style.color = '#10b981';
+            
+            // Update result box
+            resultBox.style.display = 'block';
+            resultMultiplier.textContent = `${odd}x`;
+            resultConfidence.textContent = `${prediction.confidence}%`;
+            resultTime.textContent = targetTime.toLocaleTimeString();
+            
+            // Start countdown
+            startCountdown(targetTime, odd);
+            
+            // Add to history
+            addToHistory(odd, targetTime, prediction.confidence);
+        }
+
+        // Start countdown
+        function startCountdown(targetTime, odd) {
+            if (timer) clearInterval(timer);
+            
+            countdownBox.style.display = 'block';
+            
+            timer = setInterval(() => {
+                const now = new Date();
+                const diff = Math.floor((targetTime - now) / 1000);
+                
+                if (diff <= 0) {
+                    countdownBox.classList.add('active');
+                    countdownText.innerHTML = `<i class="fas fa-rocket"></i> ${odd}x ACTIVE! Place bet now!`;
+                    clearInterval(timer);
+                } else {
+                    const minutes = Math.floor(diff / 60);
+                    const seconds = diff % 60;
+                    countdownText.textContent = `Next ${odd}x signal in ${minutes}m ${seconds}s`;
+                }
+            }, 1000);
+        }
+
+        // Add to history
+        function addToHistory(odd, time, confidence) {
+            history.unshift({
+                multiplier: odd,
+                time: time.toLocaleTimeString(),
+                confidence: confidence
+            });
+            
+            renderHistory();
+        }
+
+        // Render history
+        function renderHistory() {
+            historyList.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">No prediction history yet</p>';
+                return;
+            }
+            
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                historyItem.innerHTML = `
+                    <div class="history-multiplier">${item.multiplier}x</div>
+                    <div class="history-details">
+                        <div class="history-detail">
+                            <div class="history-label">Time</div>
+                            <div class="history-value">${item.time}</div>
+                        </div>
+                        <div class="history-detail">
+                            <div class="history-label">Confidence</div>
+                            <div class="history-value">${item.confidence}%</div>
+                        </div>
+                    </div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Event Listeners
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeHash);
+        
+        document.getElementById('pasteBtn').addEventListener('click', async () => {
+            try {
+                hashInput.value = (await navigator.clipboard.readText()).trim();
+                analyzeHash();
+            } catch (error) {
+                console.error('Failed to read clipboard:', error);
+            }
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            hashInput.value = '';
+            hashError.style.display = 'none';
+            multiplierGrid.innerHTML = '';
+            autoSelectBtn.style.display = 'none';
+        });
+        
+        document.getElementById('autoSelectBtn').addEventListener('click', () => {
+            // Find the multiplier with highest confidence
+            let bestOdd = null;
+            let bestConfidence = 0;
+            
+            odds.forEach(odd => {
+                if (predictions[odd].confidence > bestConfidence) {
+                    bestConfidence = predictions[odd].confidence;
+                    bestOdd = odd;
+                }
+            });
+            
+            if (bestOdd) {
+                predict(bestOdd);
+            }
+        });
+        
+        document.getElementById('clearHistory').addEventListener('click', () => {
+            history = [];
+            renderHistory();
+            signalCountValue = 0;
+            signalBanner.style.display = 'none';
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
+            });
+        });
+
+        // Live clock
+        function updateClock() {
+            const now = new Date();
+            timeDisplay.textContent = now.toLocaleTimeString();
+        }
+        
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Initialize history display
+        renderHistory();
+    </script>
+</body>
+</html>
